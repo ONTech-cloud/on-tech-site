@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Wiki ON Tech</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 30px;
+      text-align: center;
+      color: #333;
+    }
+    h2 {
+      margin-bottom: 10px;
+      color: #1976d2;
+    }
+    input {
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 8px;
+      border: 2px solid #1976d2;
+      font-size: 16px;
+      outline: none;
+    }
+    button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 8px;
+      background-color: #1976d2;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #135ba1;
+    }
+    #result {
+      margin-top: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #result h3 {
+      color: #1976d2;
+    }
+    #result a {
+      text-decoration: none;
+      color: #388e3c;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Recherche Wikipédia sécurisée</h2>
+  <p>Entrez un mot-clé pour afficher un résumé.</p>
+  <input type="text" id="searchInput" placeholder="Ex : énergie solaire" />
+  <button id="searchBtn">Chercher</button>
+
+  <div id="result"></div>
+
+  <script>
+    window.addEventListener("load", function () {
+      const btn = document.getElementById("searchBtn");
+
+      btn.addEventListener("click", async function () {
+        const query = document.getElementById("searchInput").value.trim();
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "";
+
+        if (!query) {
+          resultDiv.innerHTML = "<p>❗ Veuillez entrer un mot-clé.</p>";
+          return;
+        }
+
+        const apiUrl = `https://fr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+
+        try {
+          const response = await fetch(apiUrl);
+          if (!response.ok) throw new Error("Non trouvé");
+          const data = await response.json();
+
+          if (data.type === "disambiguation") {
+            resultDiv.innerHTML = `<p>🔍 Le terme <strong>${query}</strong> est ambigu. Essayez d’être plus précis.</p>`;
+          } else {
+            resultDiv.innerHTML = `
+              <h3>${data.title}</h3>
+              <p>${data.extract}</p>
+              <a href="${data.content_urls.desktop.page}" target="_blank">Lire l’article complet</a>
+            `;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<p>⚠️ Aucun article trouvé pour <strong>${query}</strong>.</p>`;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
